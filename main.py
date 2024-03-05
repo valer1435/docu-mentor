@@ -1,15 +1,17 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-import httpx
-from dotenv import load_dotenv
-import os
-import openai
 import logging
+import os
 import string
 import sys
+
+import httpx
+import openai
 import ray
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from ray import serve
 
+from NvidiaLLM import NvidiaLLM
 from utils import (
     generate_jwt,
     get_installation_access_token,
@@ -20,10 +22,8 @@ from utils import (
     get_context_from_files,
 )
 
-
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger("Docu Mentor")
-
 
 GREETING = """
 👋 Hi, I'm @docu-mentor, an LLM-powered GitHub app
@@ -55,7 +55,6 @@ ANYSCALE_API_ENDPOINT = "https://api.endpoints.anyscale.com/v1"
 openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
-
 SYSTEM_CONTENT = """You are a helpful assistant.
 Improve the following <content>. Criticise syntax, grammar, punctuation, style, etc.
 Recommend common technical writing knowledge, such as used in Vale
@@ -73,26 +72,17 @@ The <content> will be in JSON format and contains file name keys and text values
 Make sure to give very concise feedback per file.
 """
 
+
 def mentor(
         content,
-        model="codellama/CodeLlama-34b-Instruct-hf",
-        system_content=SYSTEM_CONTENT,
+        model,
         prompt=PROMPT
-    ):
-    result = openai.ChatCompletion.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_content},
-            {"role": "user", "content": f"This is the content: {content}. {prompt}"},
-        ],
-        temperature=0,
-    )
-    usage = result.get("usage")
-    prompt_tokens = usage.get("prompt_tokens")
-    completion_tokens = usage.get("completion_tokens")
-    content = result["choices"][0]["message"]["content"]
+):
 
-    return content, model, prompt_tokens, completion_tokens
+    content = model.get_answer(f"This is the content: {content}. {prompt}")
+
+    return content, model
+
 
 try:
     ray.init()
@@ -101,31 +91,28 @@ except:
 
 
 @ray.remote
-def mentor_task(content, model, system_content, prompt):
-    return mentor(content, model, system_content, prompt)
+def mentor_task(content, model, prompt):
+    return mentor(content, model, prompt)
+
 
 def ray_mentor(
         content: dict,
-        model="codellama/CodeLlama-34b-Instruct-hf",
-        system_content=SYSTEM_CONTENT,
-        prompt="Improve this content."
-    ):
+        model,
+        prompt=PROMPT
+):
     futures = [
-        mentor_task.remote(v, model, system_content, prompt)
+        mentor_task.remote(v, model, prompt)
         for v in content.values()
-        ]
+    ]
     suggestions = ray.get(futures)
     content = {k: v[0] for k, v in zip(content.keys(), suggestions)}
-    prompt_tokens = sum(v[2] for v in suggestions)
-    completion_tokens = sum(v[3] for v in suggestions)
 
     print_content = ""
     for k, v in content.items():
         print_content += f"{k}:\n\t\{v}\n\n"
     logger.info(print_content)
 
-    return print_content, model, prompt_tokens, completion_tokens
-
+    return print_content, model
 
 
 app = FastAPI()
@@ -153,9 +140,13 @@ async def handle_webhook(request: Request):
     else:
         raise ValueError("No app installation found.")
 
+    # Model initialization
+    model = NvidiaLLM(system_prompt=SYSTEM_CONTENT,
+                      model_config={'temperature': 0.5, 'max_tokens': 1024, 'top_p': 0.7})
+
     # If PR exists and is opened
     if "pull_request" in data.keys() and (
-        data["action"] in ["opened", "reopened"]
+            data["action"] in ["opened", "reopened"]
     ):  # use "synchronize" for tracking new commits
         pr = data.get("pull_request")
 
@@ -189,8 +180,8 @@ async def handle_webhook(request: Request):
 
             # Check if the bot is mentioned in the comment
             if (
-                author_handle != "docu-mentor[bot]"
-                and "@docu-mentor run" in comment_body
+                    author_handle != "docu-mentor[bot]"
+                    and "@docu-mentor run" in comment_body
             ):
                 async with httpx.AsyncClient() as client:
                     # Fetch diff from GitHub
@@ -227,25 +218,23 @@ async def handle_webhook(request: Request):
                         }
 
                     # Get suggestions from Docu Mentor
-                    content, model, prompt_tokens, completion_tokens = \
-                        ray_mentor(context_files) if ray.is_initialized() else mentor(context_files)
-
+                    content, model = \
+                        ray_mentor(context_files, model) if ray.is_initialized() else mentor(context_files, model)
 
                     # Let's comment on the PR
                     await client.post(
                         f"{comment['issue_url']}/comments",
                         json={
                             "body": f":rocket: Docu Mentor finished "
-                            + "analysing your PR! :rocket:\n\n"
-                            + "Take a look at your results:\n"
-                            + f"{content}\n\n"
-                            + "This bot is proudly powered by "
-                            + "[Anyscale Endpoints](https://app.endpoints.anyscale.com/).\n"
-                            + f"It used the model {model}, used {prompt_tokens} prompt tokens, "
-                            + f"and {completion_tokens} completion tokens in total."
+                                    + "analysing your PR! :rocket:\n\n"
+                                    + "Take a look at your results:\n"
+                                    + f"{content}\n\n"
+                                    + "This bot is powered by "
+                                    + "[NVIDIA AI Foundation Models and Endpoints](https://catalog.ngc.nvidia.com/ai-foundation-models).\n"
                         },
                         headers=headers,
                     )
+
 
 @serve.deployment(route_prefix="/")
 @serve.ingress(app)
