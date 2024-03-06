@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import string
@@ -11,7 +12,6 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from ray import serve
 
-from NvidiaLLM import NvidiaLLM
 from utils import (
     generate_jwt,
     get_installation_access_token,
@@ -22,7 +22,6 @@ from utils import (
     get_context_from_files,
     get_answer
 )
-
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger("Docu Mentor")
@@ -74,15 +73,14 @@ The <content> will be in JSON format and contains file name keys and text values
 Make sure to give very concise feedback per file.
 """
 
+
 def mentor(
         content,
         prompt=PROMPT
 ):
-
     content = get_answer(f"This is the content: {content}. {prompt}", SYSTEM_CONTENT)
 
     return content
-
 
 
 try:
@@ -93,7 +91,7 @@ except:
 
 @ray.remote
 def mentor_task(content, prompt):
-    return mentor(content,  prompt)
+    return mentor(content, prompt)
 
 
 def ray_mentor(
@@ -110,9 +108,9 @@ def ray_mentor(
     print_content = ""
     for k, v in content.items():
         print_content += f"{k}:\n\t\{v}\n\n"
-   # logger.info(print_content)
+    # logger.info(print_content)
 
-    return print_content, model
+    return print_content
 
 
 app = FastAPI()
@@ -140,7 +138,6 @@ async def handle_webhook(request: Request):
         }
     else:
         raise ValueError("No app installation found.")
-
 
     # If PR exists and is opened
     if "pull_request" in data.keys() and (
@@ -180,28 +177,27 @@ async def handle_webhook(request: Request):
                     author_handle != "open-code-helper[bot]"
                     and "@open-code-helper run" in comment_body
             ):
-               try:
-                    async with httpx.AsyncClient(timeout=60) as client:                    # Fetch diff from GitHub
+                try:
+                    async with httpx.AsyncClient(timeout=60) as client:  # Fetch diff from GitHub
                         files_to_keep = comment_body.replace(
                             "@open-code-helper run", ""
                         ).split(" ")
                         files_to_keep = [item for item in files_to_keep if item]
 
                         # logger.info(files_to_keep)
- 
+
                         url = get_diff_url(pr)
                         diff_response = await client.get(url, headers=headers)
                         diff = diff_response.text
 
                         files_with_lines = parse_diff_to_line_numbers(diff)
-    
+
                         # Get head branch of the PR
                         headers["Accept"] = "application/vnd.github.full+json"
                         head_branch = await get_pr_head_branch(pr, headers)
 
                         # Get files from head branch
                         head_branch_files = await get_branch_files(pr, head_branch, headers)
-                    
 
                         # Enrich diff data with context from the head branch.
                         context_files = get_context_from_files(head_branch_files, files_with_lines)
@@ -212,27 +208,27 @@ async def handle_webhook(request: Request):
                                 k: context_files[k]
                                 for k in context_files
                                 if any(sub in k for sub in files_to_keep)
-                            } 
+                            }
                         print(context_files)
                         # Get suggestions from Docu Mentor
-                        content =  mentor(context_files)
+                        content = mentor(context_files)
                         print(content)
 
                         # Let's comment on the PR
                         await client.post(
                             f"{comment['issue_url']}/comments",
                             json={
-                            "body": f":rocket: Docu Mentor finished "
-                                    + "analysing your PR! :rocket:\n\n"
-                                    + "Take a look at your results:\n"
-                                    + f"{content}\n\n"
-                                    + "This bot is powered by "
-                                    + "[NVIDIA AI Foundation Models and Endpoints](https://catalog.ngc.nvidia.com/ai-foundation-models).\n"
+                                "body": f":rocket: Docu Mentor finished "
+                                        + "analysing your PR! :rocket:\n\n"
+                                        + "Take a look at your results:\n"
+                                        + f"{content}\n\n"
+                                        + "This bot is powered by "
+                                        + "[NVIDIA AI Foundation Models and Endpoints](https://catalog.ngc.nvidia.com/ai-foundation-models).\n"
                             },
-                            headers=headers,
+                            headers=headers
                         )
-                  except asyncio.CancelledError:
-                      await client.post(
+                except asyncio.CancelledError:
+                    await client.post(
                         f"{comment['issue_url']}/comments",
                         json={
                             "body": f":rocket: Docu Mentor finished "
@@ -244,6 +240,7 @@ async def handle_webhook(request: Request):
                         },
                         headers=headers,
                     )
+
 
 @serve.deployment(route_prefix="/")
 @serve.ingress(app)
