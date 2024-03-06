@@ -20,7 +20,9 @@ from utils import (
     get_pr_head_branch,
     parse_diff_to_line_numbers,
     get_context_from_files,
+    get_answer
 )
+
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger("Docu Mentor")
@@ -72,16 +74,15 @@ The <content> will be in JSON format and contains file name keys and text values
 Make sure to give very concise feedback per file.
 """
 
-
 def mentor(
         content,
-        model,
         prompt=PROMPT
 ):
 
-    content = model.get_answer(f"This is the content: {content}. {prompt}")
+    content = get_answer(f"This is the content: {content}. {prompt}", SYSTEM_CONTENT)
 
-    return content, model
+    return content
+
 
 
 try:
@@ -91,17 +92,16 @@ except:
 
 
 @ray.remote
-def mentor_task(content, model, prompt):
-    return mentor(content, model, prompt)
+def mentor_task(content, prompt):
+    return mentor(content,  prompt)
 
 
 def ray_mentor(
         content: dict,
-        model,
         prompt=PROMPT
 ):
     futures = [
-        mentor_task.remote(v, model, prompt)
+        mentor_task.remote(v, prompt)
         for v in content.values()
     ]
     suggestions = ray.get(futures)
@@ -110,7 +110,7 @@ def ray_mentor(
     print_content = ""
     for k, v in content.items():
         print_content += f"{k}:\n\t\{v}\n\n"
-    logger.info(print_content)
+   # logger.info(print_content)
 
     return print_content, model
 
@@ -132,17 +132,15 @@ async def handle_webhook(request: Request):
             JWT_TOKEN, installation_id
         )
 
+        print(JWT_TOKEN, installation_id)
         headers = {
             "Authorization": f"token {installation_access_token}",
-            "User-Agent": "docu-mentor-bot",
+            "User-Agent": "open-code-helper",
             "Accept": "application/vnd.github.VERSION.diff",
         }
     else:
         raise ValueError("No app installation found.")
 
-    # Model initialization
-    model = NvidiaLLM(system_prompt=SYSTEM_CONTENT,
-                      model_config={'temperature': 0.5, 'max_tokens': 1024, 'top_p': 0.7})
 
     # If PR exists and is opened
     if "pull_request" in data.keys() and (
@@ -158,7 +156,6 @@ async def handle_webhook(request: Request):
                 headers=headers,
             )
         return JSONResponse(content={}, status_code=200)
-
     # Check if the event is a new or modified issue comment
     if "issue" in data.keys() and data.get("action") in ["created", "edited"]:
         issue = data["issue"]
@@ -180,49 +177,62 @@ async def handle_webhook(request: Request):
 
             # Check if the bot is mentioned in the comment
             if (
-                    author_handle != "docu-mentor[bot]"
-                    and "@docu-mentor run" in comment_body
+                    author_handle != "open-code-helper[bot]"
+                    and "@open-code-helper run" in comment_body
             ):
-                async with httpx.AsyncClient() as client:
-                    # Fetch diff from GitHub
-                    files_to_keep = comment_body.replace(
-                        "@docu-mentor run", ""
-                    ).split(" ")
-                    files_to_keep = [item for item in files_to_keep if item]
+               try:
+                    async with httpx.AsyncClient(timeout=60) as client:                    # Fetch diff from GitHub
+                        files_to_keep = comment_body.replace(
+                            "@open-code-helper run", ""
+                        ).split(" ")
+                        files_to_keep = [item for item in files_to_keep if item]
 
-                    logger.info(files_to_keep)
+                        # logger.info(files_to_keep)
+ 
+                        url = get_diff_url(pr)
+                        diff_response = await client.get(url, headers=headers)
+                        diff = diff_response.text
 
-                    url = get_diff_url(pr)
-                    diff_response = await client.get(url, headers=headers)
-                    diff = diff_response.text
+                        files_with_lines = parse_diff_to_line_numbers(diff)
+    
+                        # Get head branch of the PR
+                        headers["Accept"] = "application/vnd.github.full+json"
+                        head_branch = await get_pr_head_branch(pr, headers)
 
-                    files_with_lines = parse_diff_to_line_numbers(diff)
+                        # Get files from head branch
+                        head_branch_files = await get_branch_files(pr, head_branch, headers)
+                    
 
-                    # Get head branch of the PR
-                    headers["Accept"] = "application/vnd.github.full+json"
-                    head_branch = await get_pr_head_branch(pr, headers)
+                        # Enrich diff data with context from the head branch.
+                        context_files = get_context_from_files(head_branch_files, files_with_lines)
 
-                    # Get files from head branch
-                    head_branch_files = await get_branch_files(pr, head_branch, headers)
-                    print("HEAD FILES", head_branch_files)
+                        # Filter the dictionary
+                        if files_to_keep:
+                            context_files = {
+                                k: context_files[k]
+                                for k in context_files
+                                if any(sub in k for sub in files_to_keep)
+                            } 
+                        print(context_files)
+                        # Get suggestions from Docu Mentor
+                        content =  mentor(context_files)
+                        print(content)
 
-                    # Enrich diff data with context from the head branch.
-                    context_files = get_context_from_files(head_branch_files, files_with_lines)
-
-                    # Filter the dictionary
-                    if files_to_keep:
-                        context_files = {
-                            k: context_files[k]
-                            for k in context_files
-                            if any(sub in k for sub in files_to_keep)
-                        }
-
-                    # Get suggestions from Docu Mentor
-                    content, model = \
-                        ray_mentor(context_files, model) if ray.is_initialized() else mentor(context_files, model)
-
-                    # Let's comment on the PR
-                    await client.post(
+                        # Let's comment on the PR
+                        await client.post(
+                            f"{comment['issue_url']}/comments",
+                            json={
+                            "body": f":rocket: Docu Mentor finished "
+                                    + "analysing your PR! :rocket:\n\n"
+                                    + "Take a look at your results:\n"
+                                    + f"{content}\n\n"
+                                    + "This bot is powered by "
+                                    + "[NVIDIA AI Foundation Models and Endpoints](https://catalog.ngc.nvidia.com/ai-foundation-models).\n"
+                            },
+                            headers=headers,
+                        )
+                  except asyncio.CancelledError:
+                      await client.post(
                         f"{comment['issue_url']}/comments",
                         json={
                             "body": f":rocket: Docu Mentor finished "
@@ -234,7 +244,6 @@ async def handle_webhook(request: Request):
                         },
                         headers=headers,
                     )
-
 
 @serve.deployment(route_prefix="/")
 @serve.ingress(app)

@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import jwt
 import os
 import time
-
+import requests
 load_dotenv()
 
 
@@ -12,8 +12,8 @@ load_dotenv()
 APP_ID = os.environ.get("APP_ID")
 PRIVATE_KEY = os.environ.get("PRIVATE_KEY", "")
 
-# with open('private-key.pem', 'r') as f:
-#     PRIVATE_KEY = f.read()
+with open('private-key.pem', 'r') as f:
+    PRIVATE_KEY = f.read()
 
 def generate_jwt():
     payload = {
@@ -30,7 +30,7 @@ def generate_jwt():
 async def get_installation_access_token(jwt, installation_id):
     url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"
     headers = {
-        "Authorization": f"Bearer {jwt}",
+        "Authorization": f"Bearer {jwt.decode()}",
         "Accept": "application/vnd.github.v3+json",
     }
     async with httpx.AsyncClient() as client:
@@ -52,18 +52,21 @@ async def get_branch_files(pr, branch, headers):
     owner, repo = parts[-4], parts[-3]
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
     async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
         tree = response.json().get('tree', [])
         files = {}
         for item in tree:
+            print(item)
             if item['type'] == 'blob':
                 file_url = item['url']
                 print(file_url)
                 file_response = await client.get(file_url, headers=headers)
                 content = file_response.json().get('content', '')
-                # Decode the base64 content
-                decoded_content = base64.b64decode(content).decode('utf-8')
-                files[item['path']] = decoded_content
+                try:
+                    decoded_content = base64.b64decode(content).decode('utf-8')
+                    files[item['path']] = decoded_content
+                except:
+                    pass
         return files
 
 
@@ -79,7 +82,6 @@ async def get_pr_head_branch(pr, headers):
         # Check if the response is successful
         if response.status_code != 200:
             print(f"Error: Received status code {response.status_code}")
-            print("Response body:", response.text)
             return ''
 
         # Safely get the 'ref'
@@ -130,3 +132,34 @@ def get_context_from_files(files, files_with_line_numbers, context_lines=2):
             end = min(line + context_lines + 1, len(file_content))
             context_data[file].append('\n'.join(file_content[start:end]))
     return context_data
+
+def get_answer(prompt: str, system_prompt: str, temperature=0.5, max_tokens=1024, top_p=0.7) -> str:
+    messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': prompt}]
+    api_key = os.environ["NVIDIA_API_KEY"]
+    print(messages)
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "accept": "text/event-stream",
+        "content-type": "application/json",
+    }
+
+    payload = {
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "top_p": top_p,
+        "seed": 42,
+        "stream": True
+    }
+
+    api_endpoint = "https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/2ae529dc-f728-4a46-9b8d-2697213666d8"
+    response = requests.post(api_endpoint, headers=headers, json=payload, stream=True) 
+    res_text = []
+    for line in response.iter_lines():
+        if line:
+            try:
+                res_text.append(json.loads(line.decode("utf-8").split('data: ')[1])['choices'][0]['delta']['content'])
+            except:
+                pass
+    print(''.join(res_text))
+    return ''.join(res_text)
