@@ -178,7 +178,7 @@ async def handle_webhook(request: Request):
                     and "@open-code-helper run" in comment_body
             ):
                 try:
-                    async with httpx.AsyncClient(timeout=60) as client:  # Fetch diff from GitHub
+                    async with httpx.AsyncClient(timeout=1000) as client:  # Fetch diff from GitHub
                         files_to_keep = comment_body.replace(
                             "@open-code-helper run", ""
                         ).split(" ")
