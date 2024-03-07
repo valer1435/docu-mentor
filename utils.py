@@ -132,8 +132,8 @@ def get_context_from_files(files, files_with_line_numbers, context_lines=2):
             context_data[file].append('\n'.join(file_content[start:end]))
     return context_data
 
-def get_answer(prompt: str, system_prompt: str, temperature=0.5, max_tokens=1024, top_p=0.7) -> str:
-    messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': prompt}]
+def get_answer(prompt: str, system_prompt: str, temperature=0.2, max_tokens=1024, top_p=0.7) -> str:
+    messages = [{'role': 'user', 'content': system_prompt+'\n\n'+prompt}]
     api_key = os.environ["NVIDIA_API_KEY"]
     print(messages)
     headers = {
