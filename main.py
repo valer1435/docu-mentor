@@ -87,7 +87,7 @@ def index():
     return "I'm Working"
 
 
-@app.route('/webhook', methods=['POST'])
+@app.route('/webhook/', methods=['POST'])
 def handle_webhook():
     data = request.json()
     print(data, flush=True)
