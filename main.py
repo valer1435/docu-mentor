@@ -74,7 +74,11 @@ def mentor(
         content,
         prompt=PROMPT
 ):
-    content = get_answer(f"This is the content: {content}. {prompt}", SYSTEM_CONTENT)
+    for f in content:
+        output = f"File Name: {f}\nCode Snippets:\n"
+        for snippet in content[f]:
+            output += f"{snippet}\n\n\n"
+    content = get_answer(f"This is the content: {output}. {prompt}", SYSTEM_CONTENT)
 
     return content
 
@@ -145,27 +149,23 @@ def handle_webhook():
                     author_handle != "open-code-helper[bot]"
                     and "@open-code-helper run" in comment_body
             ):
-                print("i'm tagged", flush=True)
                 files_to_keep = comment_body.replace(
                     "@open-code-helper run", ""
                 ).split(" ")
                 files_to_keep = [item for item in files_to_keep if item]
 
-                print(files_to_keep)
 
                 url = get_diff_url(pr)
                 diff_response = requests.get(url, headers=headers)
                 diff = diff_response.text
 
                 files_with_lines = parse_diff_to_line_numbers(diff)
-                print(files_with_lines.keys())
                 # Get head branch of the PR
                 headers["Accept"] = "application/vnd.github.full+json"
                 head_branch = get_pr_head_branch(pr, headers)
 
                 # Get files from head branch
                 head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
-                print(head_branch_files.keys())
                 # Enrich diff data with context from the head branch.
                 context_files = get_context_from_files(head_branch_files, files_with_lines)
 
@@ -176,15 +176,8 @@ def handle_webhook():
                         for k in context_files
                         if any(sub in k for sub in files_to_keep)
                     }
-                print(context_files, flush=True)
                 # Get suggestions from Open code helper
                 content = mentor(context_files)
-                print(content, flush=True)
-                for f in content:
-                    output = f"File Name: {f}\nCode Snippets:\n"
-                    for snippet in content[f]:
-                        output += f"{snippet}\n\n\n"
-
                 # Let's comment on the PR
                 requests.post(
                     f"{comment['issue_url']}/comments",
