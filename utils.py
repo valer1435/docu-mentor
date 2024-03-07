@@ -47,7 +47,7 @@ def get_diff_url(pr):
     return f"https://patch-diff.githubusercontent.com/raw/{owner}/{repo}/pull/{pr_number}.diff"
 
 
-def get_branch_files(pr, branch, headers):
+def get_branch_files(pr, branch, headers, actual_file_names):
     original_url = pr.get("url")
     parts = original_url.split("/")
     owner, repo = parts[-4], parts[-3]
@@ -57,7 +57,7 @@ def get_branch_files(pr, branch, headers):
     tree = response.json().get('tree', [])
     files = {}
     for item in tree:
-        if item['type'] == 'blob':
+        if item['type'] == 'blob' and item['path'] in actual_file_names:
             file_url = item['url']
             print(file_url)
             file_response = requests.get(file_url, headers=headers)

@@ -164,7 +164,7 @@ def handle_webhook():
                 head_branch = get_pr_head_branch(pr, headers)
 
                 # Get files from head branch
-                head_branch_files = get_branch_files(pr, head_branch, headers)
+                head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
                 print(head_branch_files.keys())
                 # Enrich diff data with context from the head branch.
                 context_files = get_context_from_files(head_branch_files, files_with_lines)
