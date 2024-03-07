@@ -24,7 +24,7 @@ from utils import (
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logger = logging.getLogger("Docu Mentor")
+logger = logging.getLogger("Open code helper")
 
 GREETING = """
 👋 Hi, I'm @docu-mentor, an LLM-powered GitHub app
@@ -206,7 +206,7 @@ async def handle_webhook(request: Request):
                             if any(sub in k for sub in files_to_keep)
                         }
                     print(context_files)
-                    # Get suggestions from Docu Mentor
+                    # Get suggestions from Open code helper
                     content = mentor(context_files)
                     print(content)
 
@@ -214,7 +214,7 @@ async def handle_webhook(request: Request):
                     await client.post(
                         f"{comment['issue_url']}/comments",
                         json={
-                            "body": f":rocket: Docu Mentor finished "
+                            "body": f":rocket: Open code helper finished "
                                     + "analysing your PR! :rocket:\n\n"
                                     + "Take a look at your results:\n"
                                     + f"{content}\n\n"
@@ -230,7 +230,7 @@ async def handle_webhook(request: Request):
 class ServeBot:
     @app.get("/")
     async def root(self):
-        return {"message": "Docu Mentor reporting for duty!"}
+        return {"message": "Open code helper reporting for duty!"}
 
     @app.post("/webhook/")
     async def handle_webhook_route(self, request: Request):

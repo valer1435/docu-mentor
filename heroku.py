@@ -15,7 +15,7 @@ from main import handle_webhook
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-logger = logging.getLogger("Docu Mentor")
+logger = logging.getLogger("Open code helper")
 load_dotenv()
 
 
@@ -51,7 +51,7 @@ async def handle_query(request: Request):
 
 @app.get("/")
 async def root():
-    return {"message": "Docu Mentor reporting for duty!"}
+    return {"message": "Open code helper reporting for duty!"}
 
 
 @app.post("/webhook/")
