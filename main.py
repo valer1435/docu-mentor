@@ -70,8 +70,8 @@ def mentor(
     output = ""
     for i in content:
         output += f"File Name:{i}\nCode:\n{content[i]}"
-        content = get_answer(f"This is the list of files: {output} {prompt}", SYSTEM_CONTENT)
-    answer.append(content)
+        a = get_answer(f"This is the file: {output} {prompt}", SYSTEM_CONTENT)
+        answer.append(a)
 
     return '\n\n\n'.join(answer)
 
