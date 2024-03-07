@@ -74,6 +74,7 @@ def mentor(
         content,
         prompt=PROMPT
 ):
+    print(content)
     for i in content:
         output = f"File Name: {i}\nCode Snippets:\n"
         for snippet in content[i]:
