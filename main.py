@@ -89,7 +89,7 @@ def index():
 
 @app.route('/webhook/', methods=['POST'])
 def handle_webhook():
-    data = request.json()
+    data = request.json
     print(data, flush=True)
 
     installation = data.get("installation")
