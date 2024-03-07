@@ -53,8 +53,8 @@ openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
 SYSTEM_CONTENT = """
-You are the assistant who should help developers maintain their code. You given with a list of new lines in each file from pull-request.
-Try to find in this lines grammar, logical syntax mistakes. Also if new lines does not 
+You are the assistant who should help developers maintain their code. You given with a changed files in pull-request.
+Try to find in files grammar, logical and syntax mistakes. Try to advice docstrings, type hints, etc.
 """
 
 PROMPT = """Improve this content.
@@ -69,10 +69,8 @@ def mentor(
 ):
     output = ""
     for i in content:
-        output += f"File Name: {i}\nCode Snippets:\n"
-        for snippet in content[i]:
-            output += f"{snippet}\n\n\n"
-    content = get_answer(f"This is the content: {output}. {prompt}", SYSTEM_CONTENT)
+        output += f"File Name:{i}\nCode:\n{content[i]}"
+    content = get_answer(f"This is the list of files: {output} {prompt}", SYSTEM_CONTENT)
 
     return content
 
@@ -147,7 +145,6 @@ def handle_webhook():
                     "@open-code-helper run", ""
                 ).split(" ")
                 files_to_keep = [item for item in files_to_keep if item]
-
 
                 url = get_diff_url(pr)
                 diff_response = requests.get(url, headers=headers)
