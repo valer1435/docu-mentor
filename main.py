@@ -90,6 +90,7 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def handle_webhook():
     data = request.json()
+    print(data)
 
     installation = data.get("installation")
     if installation and installation.get("id"):
@@ -108,7 +109,7 @@ def handle_webhook():
         }
     else:
         raise ValueError("No app installation found.")
-
+    print('got token')
     # If PR exists and is opened
     if "pull_request" in data.keys() and (
             data["action"] in ["opened", "reopened"]
@@ -126,7 +127,7 @@ def handle_webhook():
     # Check if the event is a new or modified issue comment
     if "issue" in data.keys() and data.get("action") in ["created", "edited"]:
         issue = data["issue"]
-
+        print(issue)
         # Check if the issue is a pull request
         if "/pull/" in issue["html_url"]:
             pr = issue.get("pull_request")
@@ -147,7 +148,7 @@ def handle_webhook():
                     author_handle != "open-code-helper[bot]"
                     and "@open-code-helper run" in comment_body
             ):
-
+                print('i'm tagged')
                 files_to_keep = comment_body.replace(
                     "@open-code-helper run", ""
                 ).split(" ")
