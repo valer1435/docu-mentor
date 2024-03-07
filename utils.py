@@ -8,9 +8,8 @@ import requests
 load_dotenv()
 
 
-
-APP_ID = os.environ.get("APP_ID")
-PRIVATE_KEY = os.environ.get("PRIVATE_KEY", "")
+APP_ID = os.environ.get("849742")
+PRIVATE_KEY = os.environ.get("PRIVATE_KEY", "SHA256:rMIZjOBtjzxYiZGQ5NQ6AblpUY0owMeiT+rCp3bEJiM=")
 
 with open('private-key.pem', 'r') as f:
     PRIVATE_KEY = f.read()
@@ -56,7 +55,6 @@ async def get_branch_files(pr, branch, headers):
         tree = response.json().get('tree', [])
         files = {}
         for item in tree:
-            print(item)
             if item['type'] == 'blob':
                 file_url = item['url']
                 print(file_url)

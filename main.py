@@ -56,7 +56,7 @@ ANYSCALE_API_ENDPOINT = "https://api.endpoints.anyscale.com/v1"
 openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
-SYSTEM_CONTENT = """You are a helpful assistant.
+SYSTEM_CONTENT = """You are a helpful assistant who helps developers improve their code in pull-request.
 Improve the following <content>. Criticise syntax, grammar, punctuation, style, etc.
 Recommend common technical writing knowledge, such as used in Vale
 and the Google developer documentation style guide.
@@ -69,8 +69,10 @@ If you encounter several files, give very concise feedback per file.
 
 PROMPT = """Improve this content.
 Don't comment on file names or other meta data, just the actual text.
-The <content> will be in JSON format and contains file name keys and text values.
+The <content> will be in JSON format.
 Make sure to give very concise feedback per file.
+
+json format: {'file_name': ['difference_1', 'difference_2']}
 """
 
 
@@ -129,8 +131,6 @@ async def handle_webhook(request: Request):
         installation_access_token = await get_installation_access_token(
             JWT_TOKEN, installation_id
         )
-
-        print(JWT_TOKEN, installation_id)
         headers = {
             "Authorization": f"token {installation_access_token}",
             "User-Agent": "open-code-helper",
@@ -177,57 +177,44 @@ async def handle_webhook(request: Request):
                     author_handle != "open-code-helper[bot]"
                     and "@open-code-helper run" in comment_body
             ):
-                try:
-                    async with httpx.AsyncClient(timeout=1000) as client:  # Fetch diff from GitHub
-                        files_to_keep = comment_body.replace(
-                            "@open-code-helper run", ""
-                        ).split(" ")
-                        files_to_keep = [item for item in files_to_keep if item]
 
-                        # logger.info(files_to_keep)
+                async with httpx.AsyncClient(timeout=1000) as client:  # Fetch diff from GitHub
+                    files_to_keep = comment_body.replace(
+                        "@open-code-helper run", ""
+                    ).split(" ")
+                    files_to_keep = [item for item in files_to_keep if item]
 
-                        url = get_diff_url(pr)
-                        diff_response = await client.get(url, headers=headers)
-                        diff = diff_response.text
+                    # logger.info(files_to_keep)
 
-                        files_with_lines = parse_diff_to_line_numbers(diff)
+                    url = get_diff_url(pr)
+                    diff_response = await client.get(url, headers=headers)
+                    diff = diff_response.text
 
-                        # Get head branch of the PR
-                        headers["Accept"] = "application/vnd.github.full+json"
-                        head_branch = await get_pr_head_branch(pr, headers)
+                    files_with_lines = parse_diff_to_line_numbers(diff)
 
-                        # Get files from head branch
-                        head_branch_files = await get_branch_files(pr, head_branch, headers)
+                    # Get head branch of the PR
+                    headers["Accept"] = "application/vnd.github.full+json"
+                    head_branch = await get_pr_head_branch(pr, headers)
 
-                        # Enrich diff data with context from the head branch.
-                        context_files = get_context_from_files(head_branch_files, files_with_lines)
+                    # Get files from head branch
+                    head_branch_files = await get_branch_files(pr, head_branch, headers)
 
-                        # Filter the dictionary
-                        if files_to_keep:
-                            context_files = {
-                                k: context_files[k]
-                                for k in context_files
-                                if any(sub in k for sub in files_to_keep)
-                            }
-                        print(context_files)
-                        # Get suggestions from Docu Mentor
-                        content = mentor(context_files)
-                        print(content)
+                    # Enrich diff data with context from the head branch.
+                    context_files = get_context_from_files(head_branch_files, files_with_lines)
 
-                        # Let's comment on the PR
-                        await client.post(
-                            f"{comment['issue_url']}/comments",
-                            json={
-                                "body": f":rocket: Docu Mentor finished "
-                                        + "analysing your PR! :rocket:\n\n"
-                                        + "Take a look at your results:\n"
-                                        + f"{content}\n\n"
-                                        + "This bot is powered by "
-                                        + "[NVIDIA AI Foundation Models and Endpoints](https://catalog.ngc.nvidia.com/ai-foundation-models).\n"
-                            },
-                            headers=headers
-                        )
-                except asyncio.CancelledError:
+                    # Filter the dictionary
+                    if files_to_keep:
+                        context_files = {
+                            k: context_files[k]
+                            for k in context_files
+                            if any(sub in k for sub in files_to_keep)
+                        }
+                    print(context_files)
+                    # Get suggestions from Docu Mentor
+                    content = mentor(context_files)
+                    print(content)
+
+                    # Let's comment on the PR
                     await client.post(
                         f"{comment['issue_url']}/comments",
                         json={
@@ -238,7 +225,7 @@ async def handle_webhook(request: Request):
                                     + "This bot is powered by "
                                     + "[NVIDIA AI Foundation Models and Endpoints](https://catalog.ngc.nvidia.com/ai-foundation-models).\n"
                         },
-                        headers=headers,
+                        headers=headers
                     )
 
 
