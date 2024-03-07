@@ -27,19 +27,19 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger("Open code helper")
 
 GREETING = """
-👋 Hi, I'm @docu-mentor, an LLM-powered GitHub app
-powered by [Anyscale Endpoints](https://app.endpoints.anyscale.com/)
+👋 Hi, I'm @open-code-helper, an LLM-powered GitHub app
+powered by [NVIDIA AI Foundation Models and Endpoints](https://catalog.ngc.nvidia.com/ai-foundation-models)
 that gives you actionable feedback on your writing.
 
 Simply create a new comment in this PR that says:
 
-@docu-mentor run
+@open-code-helper run
 
 and I will start my analysis. I only look at what you changed
 in this PR. If you only want me to look at specific files or folders,
 you can specify them like this:
 
-@docu-mentor run doc/ README.md
+@open-code-helper run doc/ README.md
 
 In this example, I'll have a look at all files contained in the "doc/"
 folder and the file "README.md". All good? Let's get started!
