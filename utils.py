@@ -57,6 +57,7 @@ def get_branch_files(pr, branch, headers):
     tree = response.json().get('tree', [])
     files = {}
     for item in tree:
+        print(item)
         if item['type'] == 'blob':
             file_url = item['url']
             print(file_url)
