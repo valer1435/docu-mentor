@@ -169,7 +169,7 @@ def handle_webhook():
                 print(files_with_lines.keys())
                 # Enrich diff data with context from the head branch.
                 context_files = get_context_from_files(head_branch_files, files_with_lines)
-
+                print(context_files)
                 # Filter the dictionary
                 if files_to_keep:
                     context_files = {
