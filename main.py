@@ -83,7 +83,7 @@ app = Flask(__name__)
 
 
 @app.route('/', methods=['GET'])
-def handle_webhook():
+def index():
     return "I'm Working"
 
 
