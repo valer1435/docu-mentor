@@ -8,8 +8,7 @@ import requests
 load_dotenv()
 
 
-APP_ID = os.environ.get("849742")
-PRIVATE_KEY = os.environ.get("PRIVATE_KEY", "SHA256:rMIZjOBtjzxYiZGQ5NQ6AblpUY0owMeiT+rCp3bEJiM=")
+APP_ID = os.environ.get("APP_ID")
 
 with open('private-key.pem', 'r') as f:
     PRIVATE_KEY = f.read()

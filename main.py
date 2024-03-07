@@ -49,8 +49,6 @@ load_dotenv()
 
 # If the app was installed, retrieve the installation access token through the App's
 # private key and app ID, by generating an intermediary JWT token.
-APP_ID = os.environ.get("APP_ID")
-PRIVATE_KEY = os.environ.get("PRIVATE_KEY", "")
 
 ANYSCALE_API_ENDPOINT = "https://api.endpoints.anyscale.com/v1"
 openai.api_base = ANYSCALE_API_ENDPOINT
