@@ -66,7 +66,7 @@ def get_branch_files(pr, branch, headers):
                 decoded_content = base64.b64decode(content).decode('utf-8')
                 files[item['path']] = decoded_content
             except:
-                pass
+                print(f'exp with {file_url}')
         return files
 
 
