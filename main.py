@@ -151,7 +151,7 @@ def handle_webhook():
                 ).split(" ")
                 files_to_keep = [item for item in files_to_keep if item]
 
-                # logger.info(files_to_keep)
+                print(files_to_keep)
 
                 url = get_diff_url(pr)
                 diff_response = requests.get(url, headers=headers)
