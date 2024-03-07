@@ -4,7 +4,6 @@ import os
 import string
 import sys
 
-
 import openai
 import requests
 from dotenv import load_dotenv
@@ -81,6 +80,11 @@ def mentor(
 
 
 app = Flask(__name__)
+
+
+@app.route('/', methods=['GET'])
+def handle_webhook():
+    return "I'm Working"
 
 
 @app.route('/webhook', methods=['POST'])
@@ -195,4 +199,4 @@ def handle_webhook():
 
 
 if __name__ == '__main__':
-    app.run(port=5050)
+    app.run(host=10.32.32.6, port=5050)
