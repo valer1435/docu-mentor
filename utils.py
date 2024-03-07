@@ -136,7 +136,7 @@ def get_context_from_files(files, files_with_line_numbers, context_lines=2):
 def get_answer(prompt: str, system_prompt: str, temperature=0.2, max_tokens=1024, top_p=0.7) -> str:
     messages = [{'role': 'user', 'content': system_prompt + '\n\n' + prompt}]
     api_key = os.environ["NVIDIA_API_KEY"]
-    print(messages[0]['content'])
+    #print(messages[0]['content'])
     headers = {
         "Authorization": f"Bearer {api_key}",
         "accept": "text/event-stream",
