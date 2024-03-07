@@ -148,7 +148,7 @@ def handle_webhook():
                     author_handle != "open-code-helper[bot]"
                     and "@open-code-helper run" in comment_body
             ):
-                print('i'm tagged')
+                print("i'm tagged")
                 files_to_keep = comment_body.replace(
                     "@open-code-helper run", ""
                 ).split(" ")
