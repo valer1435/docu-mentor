@@ -90,7 +90,7 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def handle_webhook():
     data = request.json()
-    print(data)
+    print(data, file=sys.stderr)
 
     installation = data.get("installation")
     if installation and installation.get("id"):
@@ -109,7 +109,7 @@ def handle_webhook():
         }
     else:
         raise ValueError("No app installation found.")
-    print('got token')
+    print('got token', file=sys.stderr)
     # If PR exists and is opened
     if "pull_request" in data.keys() and (
             data["action"] in ["opened", "reopened"]
@@ -127,7 +127,7 @@ def handle_webhook():
     # Check if the event is a new or modified issue comment
     if "issue" in data.keys() and data.get("action") in ["created", "edited"]:
         issue = data["issue"]
-        print(issue)
+        print(issue, file=sys.stderr)
         # Check if the issue is a pull request
         if "/pull/" in issue["html_url"]:
             pr = issue.get("pull_request")
@@ -148,7 +148,7 @@ def handle_webhook():
                     author_handle != "open-code-helper[bot]"
                     and "@open-code-helper run" in comment_body
             ):
-                print("i'm tagged")
+                print("i'm tagged", file=sys.stderr)
                 files_to_keep = comment_body.replace(
                     "@open-code-helper run", ""
                 ).split(" ")
@@ -179,10 +179,10 @@ def handle_webhook():
                         for k in context_files
                         if any(sub in k for sub in files_to_keep)
                     }
-                print(context_files)
+                print(context_files, file=sys.stderr)
                 # Get suggestions from Open code helper
                 content = mentor(context_files)
-                print(content)
+                print(content, file=sys.stderr)
 
                 # Let's comment on the PR
                 requests.post(
