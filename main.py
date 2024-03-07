@@ -74,9 +74,9 @@ def mentor(
         content,
         prompt=PROMPT
 ):
-    for f in content:
-        output = f"File Name: {f}\nCode Snippets:\n"
-        for snippet in content[f]:
+    for i in content:
+        output = f"File Name: {i}\nCode Snippets:\n"
+        for snippet in content[i]:
             output += f"{snippet}\n\n\n"
     content = get_answer(f"This is the content: {output}. {prompt}", SYSTEM_CONTENT)
 
