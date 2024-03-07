@@ -67,9 +67,8 @@ def mentor(
         prompt=PROMPT
 ):
     answer = []
-    output = ""
     for i in content:
-        output += f"File Name:{i}\nCode:\n{content[i]}"
+        output = f"File Name:{i}\nCode:\n{content[i]}"
         a = get_answer(f"This is the file: {output} {prompt}", SYSTEM_CONTENT)
         answer.append(a)
 
