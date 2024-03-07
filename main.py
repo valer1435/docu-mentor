@@ -199,4 +199,4 @@ def handle_webhook():
 
 
 if __name__ == '__main__':
-    app.run(host='10.32.32.6', port=5050)
+    app.run(host='10.32.32.6', port=5050, debug=True)
