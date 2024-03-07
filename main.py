@@ -180,6 +180,10 @@ def handle_webhook():
                 # Get suggestions from Open code helper
                 content = mentor(context_files)
                 print(content, flush=True)
+                for f in content:
+                    output = f"File Name: {f}\nCode Snippets:\n"
+                    for snippet in content[f]:
+                        output += f"{snippet}\n\n\n"
 
                 # Let's comment on the PR
                 requests.post(
