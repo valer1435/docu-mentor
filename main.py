@@ -69,8 +69,6 @@ PROMPT = """Improve this content.
 Don't comment on file names or other meta data, just the actual text.
 The <content> will be in JSON format.
 Make sure to give very concise feedback per file.
-
-json format: {'file_name': ['difference_1', 'difference_2']}
 """
 
 
