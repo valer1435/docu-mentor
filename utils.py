@@ -69,7 +69,7 @@ def get_branch_files(pr, branch, headers):
                 files[item['path']] = decoded_content
             except:
                 print(f'exp with {file_url}')
-        return files
+    return files
 
 
 def get_pr_head_branch(pr, headers):
