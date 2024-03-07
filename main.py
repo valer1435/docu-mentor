@@ -53,13 +53,12 @@ openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
 SYSTEM_CONTENT = """
-You are the assistant who should help developers maintain their code. You given with a changed files in pull-request.
+You are the assistant who should help developers maintain their code. You given with a changed file in pull-request.
 Try to find in files grammar, logical and syntax mistakes. Try to advice docstrings, type hints, etc.
 """
 
 PROMPT = """Improve this content.
 Don't comment on file names or other meta data, just the actual text.
-Make sure to give very concise feedback per file.
 """
 
 
@@ -67,12 +66,14 @@ def mentor(
         content,
         prompt=PROMPT
 ):
+    answer = []
     output = ""
     for i in content:
         output += f"File Name:{i}\nCode:\n{content[i]}"
-    content = get_answer(f"This is the list of files: {output} {prompt}", SYSTEM_CONTENT)
+        content = get_answer(f"This is the list of files: {output} {prompt}", SYSTEM_CONTENT)
+    answer.append(content)
 
-    return content
+    return '\n\n\n'.join(answer)
 
 
 app = Flask(__name__)
