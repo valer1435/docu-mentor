@@ -52,9 +52,10 @@ def get_branch_files(pr, branch, headers):
     parts = original_url.split("/")
     owner, repo = parts[-4], parts[-3]
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
-    print(owner, repo, branch)
+
     response = requests.get(url, headers=headers)
     tree = response.json().get('tree', [])
+    print(tree)
     files = {}
     for item in tree:
         print(item)
