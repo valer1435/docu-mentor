@@ -52,20 +52,13 @@ ANYSCALE_API_ENDPOINT = "https://api.endpoints.anyscale.com/v1"
 openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
-SYSTEM_CONTENT = """You are a helpful assistant who helps developers improve their code in pull-request.
-Improve the following <content>. Criticise syntax, grammar, punctuation, style, etc.
-Recommend common technical writing knowledge, such as used in Vale
-and the Google developer documentation style guide.
-For Python docstrings, make sure input arguments and return values are documented.
-Also, docstrings should have good descriptions and come with examples.
-If the content is good, don't comment on it.
-You can use GitHub-flavored markdown syntax in your answer.
-If you encounter several files, give very concise feedback per file.
+SYSTEM_CONTENT = """
+You are the assistant who should help developers maintain their code. You given with a list of new lines in each file from pull-request.
+Try to find in this lines grammar, logical syntax mistakes. Also if new lines does not 
 """
 
 PROMPT = """Improve this content.
 Don't comment on file names or other meta data, just the actual text.
-The <content> will be in JSON format.
 Make sure to give very concise feedback per file.
 """
 
@@ -179,7 +172,7 @@ def handle_webhook():
                         if any(sub in k for sub in files_to_keep)
                     }
                 # Get suggestions from Open code helper
-                content = mentor(context_files)
+                content = mentor(head_branch_files)
                 # Let's comment on the PR
                 requests.post(
                     f"{comment['issue_url']}/comments",
