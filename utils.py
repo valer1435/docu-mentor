@@ -1,19 +1,20 @@
 import base64
 import json
 
-import httpx
+
 from dotenv import load_dotenv
 import jwt
 import os
 import time
 import requests
-load_dotenv()
 
+load_dotenv()
 
 APP_ID = os.environ.get("APP_ID")
 
 with open('private-key.pem', 'r') as f:
     PRIVATE_KEY = f.read()
+
 
 def generate_jwt():
     payload = {
@@ -27,15 +28,15 @@ def generate_jwt():
     raise ValueError("PRIVATE_KEY not found.")
 
 
-async def get_installation_access_token(jwt, installation_id):
+def get_installation_access_token(jwt, installation_id):
     url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"
     headers = {
         "Authorization": f"Bearer {jwt.decode()}",
         "Accept": "application/vnd.github.v3+json",
     }
-    async with httpx.AsyncClient() as client:
-        response = await client.post(url, headers=headers)
-        return response.json()["token"]
+
+    response = requests.post(url, headers=headers)
+    return response.json()["token"]
 
 
 def get_diff_url(pr):
@@ -46,48 +47,47 @@ def get_diff_url(pr):
     return f"https://patch-diff.githubusercontent.com/raw/{owner}/{repo}/pull/{pr_number}.diff"
 
 
-async def get_branch_files(pr, branch, headers):
+def get_branch_files(pr, branch, headers):
     original_url = pr.get("url")
     parts = original_url.split("/")
     owner, repo = parts[-4], parts[-3]
     url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
-    async with httpx.AsyncClient() as client:
-        response = requests.get(url, headers=headers)
-        tree = response.json().get('tree', [])
-        files = {}
-        for item in tree:
-            if item['type'] == 'blob':
-                file_url = item['url']
-                print(file_url)
-                file_response = await client.get(file_url, headers=headers)
-                content = file_response.json().get('content', '')
-                try:
-                    decoded_content = base64.b64decode(content).decode('utf-8')
-                    files[item['path']] = decoded_content
-                except:
-                    pass
+
+    response = requests.get(url, headers=headers)
+    tree = response.json().get('tree', [])
+    files = {}
+    for item in tree:
+        if item['type'] == 'blob':
+            file_url = item['url']
+            print(file_url)
+            file_response = requests.get(file_url, headers=headers)
+            content = file_response.json().get('content', '')
+            try:
+                decoded_content = base64.b64decode(content).decode('utf-8')
+                files[item['path']] = decoded_content
+            except:
+                pass
         return files
 
 
-async def get_pr_head_branch(pr, headers):
+def get_pr_head_branch(pr, headers):
     original_url = pr.get("url")
     parts = original_url.split("/")
     owner, repo, pr_number = parts[-4], parts[-3], parts[-1]
     url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}"
 
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
-        # Check if the response is successful
-        if response.status_code != 200:
-            print(f"Error: Received status code {response.status_code}")
-            return ''
+    # Check if the response is successful
+    if response.status_code != 200:
+        print(f"Error: Received status code {response.status_code}")
+        return ''
 
-        # Safely get the 'ref'
-        data = response.json()
-        head_data = data.get('head', {})
-        ref = head_data.get('ref', '')
-        return ref
+    # Safely get the 'ref'
+    data = response.json()
+    head_data = data.get('head', {})
+    ref = head_data.get('ref', '')
+    return ref
 
 
 def files_to_diff_dict(diff):
@@ -132,8 +132,9 @@ def get_context_from_files(files, files_with_line_numbers, context_lines=2):
             context_data[file].append('\n'.join(file_content[start:end]))
     return context_data
 
+
 def get_answer(prompt: str, system_prompt: str, temperature=0.2, max_tokens=1024, top_p=0.7) -> str:
-    messages = [{'role': 'user', 'content': system_prompt+'\n\n'+prompt}]
+    messages = [{'role': 'user', 'content': system_prompt + '\n\n' + prompt}]
     api_key = os.environ["NVIDIA_API_KEY"]
     print(messages)
     headers = {
@@ -152,7 +153,7 @@ def get_answer(prompt: str, system_prompt: str, temperature=0.2, max_tokens=1024
     }
 
     api_endpoint = "https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/008cff6d-4f4c-4514-b61e-bcfad6ba52a7"
-    response = requests.post(api_endpoint, headers=headers, json=payload, stream=True) 
+    response = requests.post(api_endpoint, headers=headers, json=payload, stream=True)
     res_text = []
     for line in response.iter_lines():
         if line:
