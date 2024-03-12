@@ -50,8 +50,13 @@ load_dotenv()
 
 
 PROMPT = """
-You given with code file.
-Try to find in files logical mistakes. Try to advice docstrings, type hints, etc. Format answer as markdown.
+You are an expert in programming. You given list of changes from pull-request. 
+Different changes separated by '-----'.
+'+' before a line means a new line
+'-' before a line means an deleted line
+' ' before a line means an unchanged line.
+
+Please make comprehensive code-review. try to mark critical mistakes and missing docstrings if there any. If not, write all is OK.
 """
 
 
@@ -63,7 +68,8 @@ def mentor(
 ):
     answer = []
     for i in content:
-        a = model.get_answer(f"{prompt}\n```\n{content[i]}\n```")
+        united = '-----\n'.join(content[i])
+        a = model.get_answer(f"{prompt}\n```{united}```")
         answer.append(a)
 
     return '\n\n\n'.join(answer)
@@ -148,21 +154,21 @@ def handle_webhook():
                 print(files_with_lines)
                 # Get head branch of the PR
                 headers["Accept"] = "application/vnd.github.full+json"
-                head_branch = get_pr_head_branch(pr, headers)
-
-                # Get files from head branch
-                head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
-                # Enrich diff data with context from the head branch.
-                context_files = get_context_from_files(head_branch_files, files_with_lines)
+                # head_branch = get_pr_head_branch(pr, headers)
+                #
+                # # Get files from head branch
+                # head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
+                # # Enrich diff data with context from the head branch.
+                # context_files = get_context_from_files(head_branch_files, files_with_lines)
                 # Filter the dictionary
-                if files_to_keep:
-                    context_files = {
-                        k: context_files[k]
-                        for k in context_files
-                        if any(sub in k for sub in files_to_keep)
-                    }
+                # if files_to_keep:
+                #     context_files = {
+                #         k: context_files[k]
+                #         for k in context_files
+                #         if any(sub in k for sub in files_to_keep)
+                #     }
                 # Get suggestions from Open code helper
-                content = mentor(head_branch_files, NvidiaLLM())
+                content = mentor(files_with_lines, NvidiaLLM())
                 # Let's comment on the PR
                 requests.post(
                     f"{comment['issue_url']}/comments",
