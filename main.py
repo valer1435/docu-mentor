@@ -50,9 +50,8 @@ Different changes separated by '-----'.
 - before a line means an deleted line
 space before a line means an unchanged line.
 
-Please make comprehensive correction and code review. 
+Please make corrections for most critical parts of code. 
 For each part try to correct critical mistakes and missing docstrings if there any.
-If not, write all is OK. Cite code parts if needed.
 
 Use ## as main header
 """
