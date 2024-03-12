@@ -60,8 +60,7 @@ def mentor(
 ):
     answer = []
     for i in content:
-        united = '-----\n'.join(content[i])
-        subanswer = model.get_answer(f'{prompt}\n{united}')
+        subanswer = model.get_answer(f'{prompt}\n{content[i]}')
         a = f"### File {i}: \n{subanswer}"
         answer.append(a)
 
