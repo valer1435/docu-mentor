@@ -53,7 +53,7 @@ openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
 PROMPT = """
- You given with code file.
+You given with code file.
 Try to find in files grammar, logical and syntax mistakes. Try to advice docstrings, type hints, etc. Format answer as markdown.
 """
 
@@ -66,7 +66,7 @@ def mentor(
 ):
     answer = []
     for i in content:
-        a = model.get_answer(f"{prompt}\n```{content[i]}```")
+        a = model.get_answer(f"{prompt}\n```\n{content[i]}\n```")
         answer.append(a)
 
     return '\n\n\n'.join(answer)

@@ -28,7 +28,7 @@ class NvidiaLLM:
             "seed": 42,
             "stream": True
         }
-
+        print(prompt)
         api_endpoint = "https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/008cff6d-4f4c-4514-b61e-bcfad6ba52a7"
         response = requests.post(api_endpoint, headers=headers, json=payload, stream=True)
         res_text = []
