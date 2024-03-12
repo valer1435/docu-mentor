@@ -28,13 +28,7 @@ Simply create a new comment in this PR that says:
 @open-code-helper run
 
 and I will start my analysis. I only look at what you changed
-in this PR. If you only want me to look at specific files or folders,
-you can specify them like this:
-
-@open-code-helper run doc/ README.md
-
-In this example, I'll have a look at all files contained in the "doc/"
-folder and the file "README.md". All good? Let's get started!
+in this PR.
 """
 
 load_dotenv()
@@ -156,17 +150,11 @@ def handle_webhook():
                     author_handle != "open-code-helper[bot]"
                     and "@open-code-helper run" in comment_body
             ):
-                files_to_keep = comment_body.replace(
-                    "@open-code-helper run", ""
-                ).split(" ")
-                files_to_keep = [item for item in files_to_keep if item]
-
                 url = get_diff_url(pr)
                 diff_response = requests.get(url, headers=headers)
                 diff = diff_response.text
 
                 files_with_lines = parse_diff_to_line_numbers(diff)
-                print(files_with_lines)
                 # Get head branch of the PR
                 headers["Accept"] = "application/vnd.github.full+json"
                 # head_branch = get_pr_head_branch(pr, headers)
