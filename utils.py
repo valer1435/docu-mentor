@@ -43,6 +43,7 @@ def get_diff_url(pr):
     original_url = pr.get("url")
     parts = original_url.split("/")
     owner, repo, pr_number = parts[-4], parts[-3], parts[-1]
+    print(f"https://patch-diff.githubusercontent.com/raw/{owner}/{repo}/pull/{pr_number}.diff")
     return f"https://patch-diff.githubusercontent.com/raw/{owner}/{repo}/pull/{pr_number}.diff"
 
 
