@@ -102,26 +102,8 @@ def files_to_diff_dict(diff):
     return files_with_diff
 
 
-# def parse_diff_to_line_numbers(diff):
-#     print(diff)
-#     files_with_line_numbers = {}
-#     current_file = None
-#     line_number = 0
-#     for line in diff.split("\n"):
-#         if line.startswith("diff --git"):
-#             current_file = line.split(" ")[2][2:]
-#             files_with_line_numbers[current_file] = []
-#             line_number = 0
-#         elif line.startswith("@@"):
-#             line_number = int(line.split(" ")[2].split(",")[0][1:]) - 1
-#         elif line.startswith("+") and not line.startswith("+++"):
-#             files_with_line_numbers[current_file].append(line_number)
-#             line_number += 1
-#         elif not line.startswith("-"):
-#             line_number += 1
-#     return files_with_line_numbers
-
 def parse_diff_to_line_numbers(diff):
+    print(diff)
     files_with_line_numbers = {}
     current_file = None
     line_number = 0
@@ -133,14 +115,19 @@ def parse_diff_to_line_numbers(diff):
         elif line.startswith("@@"):
             line_number = int(line.split(" ")[2].split(",")[0][1:]) - 1
         elif line.startswith("+") and not line.startswith("+++"):
-            files_with_line_numbers[current_file].append(line)
+            files_with_line_numbers[current_file].append(line_number)
             line_number += 1
         elif not line.startswith("-"):
             line_number += 1
-            files_with_line_numbers[current_file].append(line)
-        else:
-            files_with_line_numbers[current_file].append(line)
     return files_with_line_numbers
+
+def parse_diff_to_line_numbers(diff):
+    diff --git
+
+
+#
+
+
 
 
 def get_context_from_files(files, files_with_line_numbers, context_lines=2):
