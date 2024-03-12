@@ -56,6 +56,19 @@ Try to generate docstrings if there any missed. Cite code parts if needed.
 Use ## as main header
 """
 
+PROMPT = """
+Please review the following code from a pull request. Your task is to:
+
+1. Identify any functions or classes that are missing docstrings. For each function that is missing a docstring, you should provide a docstring template that explains the purpose of the function, the types of its parameters, and the type of its return value.
+
+2. Find any critical mistakes or issues in the code. These could include logical errors, syntax errors, or inefficient code.
+
+3. If you find any issues, please provide suggestions for improvement.
+
+4. Use ## as main header.
+
+Here is the code:"""
+
 
 def mentor(
         content,
