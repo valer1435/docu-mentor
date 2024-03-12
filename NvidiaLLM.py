@@ -14,7 +14,6 @@ class NvidiaLLM:
     def get_answer(self, prompt: str, ) -> str:
         messages = [{'role': 'user', 'content': prompt}]
         api_key = os.environ["NVIDIA_API_KEY"]
-        print(messages[0]['content'])
         headers = {
             "Authorization": f"Bearer {api_key}",
             "accept": "text/event-stream",

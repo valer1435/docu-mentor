@@ -53,8 +53,8 @@ openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
 PROMPT = """
-You are the assistant who should help developers maintain their code. You given with a changed file in pull-request.
-Try to find in files grammar, logical and syntax mistakes. Try to advice docstrings, type hints, etc.
+ You given with code file.
+Try to find in files grammar, logical and syntax mistakes. Try to advice docstrings, type hints, etc. Format answer as markdown.
 """
 
 
@@ -66,8 +66,7 @@ def mentor(
 ):
     answer = []
     for i in content:
-        output = f"Code:\n{content[i]}"
-        a = model.get_answer(f"{prompt}\n```{output}```")
+        a = model.get_answer(f"{prompt}\n```{content[i]}```")
         answer.append(a)
 
     return '\n\n\n'.join(answer)
