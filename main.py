@@ -145,6 +145,7 @@ def handle_webhook():
                 diff = diff_response.text
 
                 files_with_lines = parse_diff_to_line_numbers(diff)
+                print(files_with_lines)
                 # Get head branch of the PR
                 headers["Accept"] = "application/vnd.github.full+json"
                 head_branch = get_pr_head_branch(pr, headers)
