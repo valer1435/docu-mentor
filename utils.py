@@ -1,5 +1,6 @@
 import base64
 import os
+import re
 import time
 
 import jwt
@@ -122,72 +123,3 @@ def get_context_from_files(files, files_with_line_numbers, context_lines=2):
             context_data[file].append('\n'.join(file_content[start:end]))
     return context_data
 
-
-if __name__ == '__main__':
-    s = """diff --git a/fedot/core/operations/evaluation/operation_implementations/data_operations/sklearn_transformations.py b/fedot/core/operations/evaluation/operation_implementations/data_operations/sklearn_transformations.py
-index d1be4d3d1b..644f878691 100644
---- a/fedot/core/operations/evaluation/operation_implementations/data_operations/sklearn_transformations.py
-+++ b/fedot/core/operations/evaluation/operation_implementations/data_operations/sklearn_transformations.py
-@@ -13,6 +13,7 @@
- from fedot.core.operations.evaluation.operation_implementations. \
-     implementation_interfaces import DataOperationImplementation, EncodedInvariantImplementation
- from fedot.core.operations.operation_parameters import OperationParameters
-+from fedot.core.repository.dataset_types import DataTypesEnum
- from fedot.preprocessing.data_types import TYPE_TO_ID
-
-
-@@ -23,6 +24,8 @@ class ComponentAnalysisImplementation(DataOperationImplementation):
-         params: OpearationParameters with the arguments
-     
-
-+    MIN_THRESHOLD_TS = 7
-+
-     def __init__(self, params: Optional[OperationParameters]):
-         super().__init__(params)
-         self.pca = None
-@@ -42,7 +45,7 @@ def fit(self, input_data: InputData):
-         self.number_of_samples, self.number_of_features = np.array(input_data.features).shape
-
-         if self.number_of_features > 1:
--            self.check_and_correct_params()
-+            self.check_and_correct_params(is_ts_data=input_data.data_type is DataTypesEnum.ts)
-             self.pca.fit(input_data.features)
-
-         return self.pca
-@@ -68,7 +71,7 @@ def transform(self, input_data: InputData) -> OutputData:
-         self.update_column_types(output_data)
-         return output_data
-
-diff --git a/test/integration/real_applications/test_examples.py b/test/integration/real_applications/test_examples.py
-index 8b5796c787..681e6fae9b 100644
---- a/test/integration/real_applications/test_examples.py
-+++ b/test/integration/real_applications/test_examples.py
-@@ -1,7 +1,6 @@
- from datetime import timedelta
-
- import numpy as np
--import pytest
- from sklearn.metrics import mean_squared_error
-
- from examples.advanced.multimodal_text_num_example import run_multi_modal_example
-@@ -84,7 +83,6 @@ def test_api_classification_example():
-     assert prediction is not None
-
-
--@pytest.mark.skip(reason="topo features fail")  # TODO resolve
- def test_api_ts_forecasting_example():
-     forecast = run_ts_forecasting_example(dataset='salaries', timeout=2, with_tuning=False)
-     assert forecast is not None
-
-"""
-
-import re
-
-sp_files = s.split('diff --git ')
-for i in sp_files:
-    current_file = i.split(" ")[0]
-    print(current_file)
-    res = re.split(r'@@.*@@', i)
-    for j in res[1::]:
-        print('------------------')
-        print(j)
