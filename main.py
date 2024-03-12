@@ -18,8 +18,7 @@ from utils import (
     get_branch_files,
     get_pr_head_branch,
     parse_diff_to_line_numbers,
-    get_context_from_files,
-    get_answer
+    get_context_from_files
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
