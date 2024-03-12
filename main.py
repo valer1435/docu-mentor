@@ -59,6 +59,11 @@ Use ## as main header
 PROMPT = """
 Please review the following code from a pull request. Your task is to:
 
+Different changes separated by '-----'.
++ before a line means a new line
+- before a line means an deleted line
+space before a line means an unchanged line.
+
 1. Identify any functions or classes that are missing docstrings. For each function that is missing a docstring, you should provide a docstring template that explains the purpose of the function, the types of its parameters, and the type of its return value.
 
 2. Find any critical mistakes or issues in the code. These could include logical errors, syntax errors, or inefficient code.
