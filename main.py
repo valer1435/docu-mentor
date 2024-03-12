@@ -52,9 +52,9 @@ load_dotenv()
 PROMPT = """
 You are an expert in programming. You given list of changes from pull-request. 
 Different changes separated by '-----'.
-'+' before a line means a new line
-'-' before a line means an deleted line
-' ' before a line means an unchanged line.
++ before a line means a new line
+- before a line means an deleted line
+space before a line means an unchanged line.
 
 Please make comprehensive code-review. try to mark critical mistakes and missing docstrings if there any. If not, write all is OK.
 """
@@ -69,7 +69,7 @@ def mentor(
     answer = []
     for i in content:
         united = '-----\n'.join(content[i])
-        a = model.get_answer(f"{prompt}\n```{united}```")
+        a = model.get_answer(f"{prompt}\n{united}")
         answer.append(a)
 
     return '\n\n\n'.join(answer)
