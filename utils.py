@@ -110,7 +110,7 @@ def parse_diff_to_line_numbers(diff):
         splits = re.split(r'@@.*@@', i)
         for j in splits[1::]:
             res[current_file].append(j)
-
+    return res
 
 def get_context_from_files(files, files_with_line_numbers, context_lines=2):
     context_data = {}
