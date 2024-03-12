@@ -46,8 +46,7 @@ Different changes separated by '-----'.
 space before a line means an unchanged line.
 
 Please make comprehensive code-review. 
-Try to advice docstrings if there any missed. Cite code parts if needed.
-Code:
+Pay attention for critical mistakes and docstrings/type hints.
 """
 
 
