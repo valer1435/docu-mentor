@@ -3,7 +3,7 @@ from openai import OpenAI
 
 
 class DeepSeekLLM:
-    def __init__(self, temperature=0.2, max_tokens=3000, top_p=0.7):
+    def __init__(self, temperature=0.2, max_tokens=2048, top_p=0.7):
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.top_p = top_p
