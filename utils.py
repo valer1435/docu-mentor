@@ -112,6 +112,7 @@ def parse_diff_to_line_numbers(diff):
             res[current_file].append(j)
     return res
 
+
 def get_context_from_files(files, files_with_line_numbers, context_lines=2):
     context_data = {}
     for file, lines in files_with_line_numbers.items():
@@ -122,4 +123,3 @@ def get_context_from_files(files, files_with_line_numbers, context_lines=2):
             end = min(line + context_lines + 1, len(file_content))
             context_data[file].append('\n'.join(file_content[start:end]))
     return context_data
-
