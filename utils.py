@@ -121,12 +121,6 @@ def parse_diff_to_line_numbers(diff):
             line_number += 1
     return files_with_line_numbers
 
-def parse_diff_to_line_numbers(diff):
-    diff --git
-
-
-#
-
 
 
 
