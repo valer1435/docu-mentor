@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 from flask import request, Flask
 
+from DeepSeekLLM import DeepSeekLLM
 from NvidiaLLM import NvidiaLLM
 from utils import (
     generate_jwt,
@@ -171,7 +172,7 @@ def handle_webhook():
                 #         if any(sub in k for sub in files_to_keep)
                 #     }
                 # Get suggestions from Open code helper
-                content = mentor(files_with_lines, NvidiaLLM())
+                content = mentor(files_with_lines, DeepSeekLLM())
                 # Let's comment on the PR
                 requests.post(
                     f"{comment['issue_url']}/comments",
