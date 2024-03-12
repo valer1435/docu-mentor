@@ -50,8 +50,11 @@ Different changes separated by '-----'.
 - before a line means an deleted line
 space before a line means an unchanged line.
 
-Please make comprehensive code-review. Try to correct critical mistakes and missing docstrings if there any.
-PleasIf not, write all is OK. Cite code parts if needed.
+Please make comprehensive correction and code review. 
+For each part try to correct critical mistakes and missing docstrings if there any.
+If not, write all is OK. Cite code parts if needed.
+
+Use ## as main header
 """
 
 
@@ -64,7 +67,7 @@ def mentor(
     for i in content:
         united = '-----\n'.join(content[i])
         subanswer = model.get_answer(f'{prompt}\n{united}')
-        a = f"File {i}: \n{subanswer}"
+        a = f"# File {i}: \n{subanswer}"
         answer.append(a)
 
     return '\n\n\n'.join(answer)
