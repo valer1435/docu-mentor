@@ -47,6 +47,7 @@ space before a line means an unchanged line.
 
 Please make comprehensive code-review. 
 Pay attention for critical mistakes and docstrings/type hints.
+Keep in mind that it is just pieces of code and some variables, imports and functions may be defined outside.
 """
 
 
