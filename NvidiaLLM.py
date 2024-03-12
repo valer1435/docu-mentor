@@ -5,12 +5,11 @@ import requests
 
 
 class NvidiaLLM:
-    def __init__(self, model_config):
-        self.model_config = model_config
+    def __init__(self, temperature=0.2, max_tokens=3000, top_p=0.7):
         self.api_endpoint = "https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/1361fa56-61d7-4a12-af32-69a3825746fa"
-        self.temperature = 0.2
-        self.max_tokens = 1024
-        self.top_p = 0.7
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+        self.top_p = top_p
 
     def get_answer(self, prompt: str, ) -> str:
         messages = [{'role': 'user', 'content': prompt}]
