@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
 from flask import request, Flask
 
+from NvidiaLLM import NvidiaLLM
 from utils import (
     generate_jwt,
     get_installation_access_token,
@@ -52,24 +53,22 @@ ANYSCALE_API_ENDPOINT = "https://api.endpoints.anyscale.com/v1"
 openai.api_base = ANYSCALE_API_ENDPOINT
 openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
-SYSTEM_CONTENT = """
+PROMPT = """
 You are the assistant who should help developers maintain their code. You given with a changed file in pull-request.
 Try to find in files grammar, logical and syntax mistakes. Try to advice docstrings, type hints, etc.
 """
 
-PROMPT = """Improve this content.
-Don't comment on file names or other meta data, just the actual text.
-"""
 
 
 def mentor(
         content,
+        model,
         prompt=PROMPT
 ):
     answer = []
     for i in content:
-        output = f"File Name:{i}\nCode:\n{content[i]}"
-        a = get_answer(f"This is the file: {output} {prompt}", SYSTEM_CONTENT)
+        output = f"Code:\n{content[i]}"
+        a = model.get_answer(f"{prompt}\n```{output}```")
         answer.append(a)
 
     return '\n\n\n'.join(answer)
@@ -159,7 +158,6 @@ def handle_webhook():
                 head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
                 # Enrich diff data with context from the head branch.
                 context_files = get_context_from_files(head_branch_files, files_with_lines)
-                print(head_branch_files)
                 # Filter the dictionary
                 if files_to_keep:
                     context_files = {
@@ -168,7 +166,7 @@ def handle_webhook():
                         if any(sub in k for sub in files_to_keep)
                     }
                 # Get suggestions from Open code helper
-                content = mentor(head_branch_files)
+                content = mentor(head_branch_files, NvidiaLLM())
                 # Let's comment on the PR
                 requests.post(
                     f"{comment['issue_url']}/comments",
