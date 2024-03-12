@@ -107,10 +107,7 @@ def parse_diff_to_line_numbers(diff):
     diff_files = diff.split('diff --git ')
     for i in diff_files[1::]:
         current_file = i.split(" ")[0]
-        res[current_file] = []
-        splits = re.split(r'@@.*@@', i)
-        for j in splits[1::]:
-            res[current_file].append(j)
+        res[current_file] = i
     return res
 
 
