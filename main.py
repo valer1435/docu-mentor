@@ -155,7 +155,7 @@ def handle_webhook():
                 #         if any(sub in k for sub in files_to_keep)
                 #     }
                 # Get suggestions from Open code helper
-                content = mentor(files_with_lines, DeepSeekLLM())
+                content = mentor(files_with_lines, NvidiaLLM())
                 # Let's comment on the PR
                 requests.post(
                     f"{comment['issue_url']}/comments",
