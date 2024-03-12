@@ -1,10 +1,7 @@
-import asyncio
 import logging
-import os
 import string
 import sys
 
-import openai
 import requests
 from dotenv import load_dotenv
 from fastapi.responses import JSONResponse
@@ -15,10 +12,7 @@ from utils import (
     generate_jwt,
     get_installation_access_token,
     get_diff_url,
-    get_branch_files,
-    get_pr_head_branch,
-    parse_diff_to_line_numbers,
-    get_context_from_files
+    parse_diff_to_line_numbers
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -56,9 +50,9 @@ Different changes separated by '-----'.
 - before a line means an deleted line
 space before a line means an unchanged line.
 
-Please make comprehensive code-review. try to mark critical mistakes and missing docstrings if there any. If not, write all is OK.
+Please make comprehensive code-review. Try to correct critical mistakes and missing docstrings if there any.
+PleasIf not, write all is OK. Cite code parts if needed.
 """
-
 
 
 def mentor(
@@ -69,7 +63,8 @@ def mentor(
     answer = []
     for i in content:
         united = '-----\n'.join(content[i])
-        a = model.get_answer(f"{prompt}\n{united}")
+        subanswer = model.get_answer(f'{prompt}\n{united}')
+        a = f"File {i}: \n{subanswer}"
         answer.append(a)
 
     return '\n\n\n'.join(answer)
