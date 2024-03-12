@@ -48,13 +48,10 @@ load_dotenv()
 # If the app was installed, retrieve the installation access token through the App's
 # private key and app ID, by generating an intermediary JWT token.
 
-ANYSCALE_API_ENDPOINT = "https://api.endpoints.anyscale.com/v1"
-openai.api_base = ANYSCALE_API_ENDPOINT
-openai.api_key = os.environ.get("ANYSCALE_API_KEY")
 
 PROMPT = """
 You given with code file.
-Try to find in files grammar, logical and syntax mistakes. Try to advice docstrings, type hints, etc. Format answer as markdown.
+Try to find in files logical mistakes. Try to advice docstrings, type hints, etc. Format answer as markdown.
 """
 
 

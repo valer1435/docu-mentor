@@ -103,6 +103,7 @@ def files_to_diff_dict(diff):
 
 
 def parse_diff_to_line_numbers(diff):
+    print(diff)
     files_with_line_numbers = {}
     current_file = None
     line_number = 0
