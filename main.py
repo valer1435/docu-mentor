@@ -70,7 +70,7 @@ space before a line means an unchanged line.
 
 3. If you find any issues, please provide suggestions for improvement.
 
-4. Use ## as main header.
+4. Use ### as main header.
 
 Here is the code:"""
 
@@ -84,7 +84,7 @@ def mentor(
     for i in content:
         united = '-----\n'.join(content[i])
         subanswer = model.get_answer(f'{prompt}\n{united}')
-        a = f"# File {i}: \n{subanswer}"
+        a = f"## File {i}: \n{subanswer}"
         answer.append(a)
 
     return '\n\n\n'.join(answer)
