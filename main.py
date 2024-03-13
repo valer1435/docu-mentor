@@ -40,8 +40,8 @@ load_dotenv()
 
 PROMPT = """
 You are an expert in programming. 
-You given a code file. Please analyse it on missed docstrings and type hints. Insert google styled docstrings and typehints where possible.
-Please, return only return part of code you changed, not whole code.
+You given a code file. Please analyse it on missed or bad formatted docstrings and type hints. Insert or improve google styled docstrings and typehints where possible.
+Please, return only changed code
 Please, format you answer as markdown.
 Here is the code:
 """
