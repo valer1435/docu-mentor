@@ -13,7 +13,7 @@ from utils import (
     generate_jwt,
     get_installation_access_token,
     get_diff_url,
-    parse_diff_to_line_numbers
+    parse_diff_to_line_numbers, get_pr_head_branch, get_branch_files, get_context_from_files
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -39,15 +39,8 @@ load_dotenv()
 
 
 PROMPT = """
-You are an expert in programming. You given list of changes from pull-request. 
-Different changes separated by '-----'.
-+ before a line means a new line
-- before a line means an deleted line
-space before a line means an unchanged line.
-
-Please make comprehensive code-review. 
-Pay attention for critical mistakes and docstrings/type hints.
-Keep in mind that it is just pieces of code and some variables, imports and functions may be defined outside.
+You are an expert in programming. 
+You given a code file. Please analyse it on docstrings missing, and where possible insert it. Return improved code. Don't return all the code, only parts with missing docstrings.
 """
 
 
@@ -140,21 +133,14 @@ def handle_webhook():
                 files_with_lines = parse_diff_to_line_numbers(diff)
                 # Get head branch of the PR
                 headers["Accept"] = "application/vnd.github.full+json"
-                # head_branch = get_pr_head_branch(pr, headers)
-                #
-                # # Get files from head branch
-                # head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
-                # # Enrich diff data with context from the head branch.
-                # context_files = get_context_from_files(head_branch_files, files_with_lines)
-                # Filter the dictionary
-                # if files_to_keep:
-                #     context_files = {
-                #         k: context_files[k]
-                #         for k in context_files
-                #         if any(sub in k for sub in files_to_keep)
-                #     }
+                head_branch = get_pr_head_branch(pr, headers)
+
+                # Get files from head branch
+                head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
+                # Enrich diff data with context from the head branch.
+                #context_files = get_context_from_files(head_branch_files, files_with_lines)
                 # Get suggestions from Open code helper
-                content = mentor(files_with_lines, NvidiaLLM())
+                content = mentor(head_branch_files, NvidiaLLM())
                 # Let's comment on the PR
                 requests.post(
                     f"{comment['issue_url']}/comments",
