@@ -56,8 +56,9 @@ def get_branch_files(pr, branch, headers, actual_file_names):
     response = requests.get(url, headers=headers)
     tree = response.json().get('tree', [])
     files = {}
+    print(actual_file_names)
     for item in tree:
-        print(actual_file_names, item['path'])
+        print(item['path'])
         if item['type'] == 'blob' and item['path'] in actual_file_names:
             file_url = item['url']
             print(file_url)
@@ -107,7 +108,7 @@ def parse_diff_to_line_numbers(diff):
     res = {}
     diff_files = diff.split('diff --git ')
     for i in diff_files[1::]:
-        current_file = i.split(" ")[0]
+        current_file = i.split(" ")[0][2:]
         res[current_file] = i
     return res
 
