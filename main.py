@@ -13,7 +13,7 @@ from utils import (
     generate_jwt,
     get_installation_access_token,
     get_diff_url,
-    parse_diff_to_line_numbers, get_branch_files, get_context_from_files, get_pr_head_branch
+    parse_diff_to_line_numbers, get_branch_files, get_pr_head_branch
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -41,12 +41,10 @@ load_dotenv()
 PROMPT = """
 You are an expert in programming. 
 You given a code file. Please analyse it on missed docstrings and type hints. Insert google styled docstrings and typehints where possible.
-Please, return code snippets with docstrings.
+Please, return only return part of code you changed, not whole code.
 Please, format you answer as markdown.
 Here is the code:
 """
-
-
 
 
 def mentor(
@@ -56,9 +54,9 @@ def mentor(
 ):
     answer = []
     for i in content:
-        subanswer = model.get_answer(f'{prompt}\n```{content[i]}```')
+        subanswer = model.get_answer(f'{prompt}```{content[i]}```')
         if not subanswer:
-            subanswer = DeepSeekLLM().get_answer(f'{prompt}\n```{content[i]}```')
+            subanswer = DeepSeekLLM().get_answer(f'{prompt}```{content[i]}```')
         a = f"### File {i}: \n{subanswer}"
         answer.append(a)
 
@@ -143,7 +141,7 @@ def handle_webhook():
                 # # Get files from head branch
                 head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
                 # # Enrich diff data with context from the head branch.
-                #context_files = get_context_from_files(head_branch_files, files_with_lines)
+                # context_files = get_context_from_files(head_branch_files, files_with_lines)
                 # Get suggestions from Open code helper
                 content = mentor(head_branch_files, NvidiaLLM())
                 # Let's comment on the PR
