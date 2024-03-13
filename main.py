@@ -40,7 +40,7 @@ load_dotenv()
 
 PROMPT = """
 You are an expert in programming. 
-You given a code file. Please analyse it on missed docstrings and type hints. Insert docstring where possible and try to insert  <<TYPEHINT>> in places where they are missed. 
+You given a code file. Please analyse it on missed docstrings and type hints. Insert docstrings and typehints where possible.
 Please, don't return whole code, only improved parts.
 Please, format you answer as markdown.
 Here is the code:
@@ -56,7 +56,7 @@ def mentor(
 ):
     answer = []
     for i in content:
-        subanswer = model.get_answer(f'{prompt}\n{content[i]}')
+        subanswer = model.get_answer(f'{prompt}\n```{content[i]}```')
         a = f"### File {i}: \n{subanswer}"
         answer.append(a)
 
