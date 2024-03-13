@@ -42,8 +42,8 @@ PROMPT = """
 You are an expert in programming. 
 You given a code file. Please analyse it on missed docstrings and type hints. Insert docstring where possible and try to insert  <<TYPEHINT>> in places where they are missed. 
 Please, don't return whole code, only improved parts.
- 
-
+Please, format you answer as markdown.
+Here is the code:
 """
 
 
