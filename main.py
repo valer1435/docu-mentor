@@ -41,7 +41,7 @@ load_dotenv()
 PROMPT = """
 You are an expert in programming. 
 You given a code file. Please analyse it on missed docstrings and type hints. Insert docstrings and typehints where possible.
-Please, don't return whole code, only improved parts.
+Please, return code snippets with docstrings.
 Please, format you answer as markdown.
 Here is the code:
 """
