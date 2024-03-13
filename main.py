@@ -13,7 +13,7 @@ from utils import (
     generate_jwt,
     get_installation_access_token,
     get_diff_url,
-    parse_diff_to_line_numbers, get_branch_files, get_context_from_files
+    parse_diff_to_line_numbers, get_branch_files, get_context_from_files, get_pr_head_branch
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
