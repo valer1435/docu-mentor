@@ -11,7 +11,7 @@ class NvidiaLLM:
         self.max_tokens = max_tokens
         self.top_p = top_p
 
-    def get_answer(self, prompt: str, ) -> str:
+    def get_answer(self, prompt: str ) -> str:
         print(prompt)
         messages = [{'role': 'user', 'content': prompt}]
         api_key = os.environ["NVIDIA_API_KEY"]
