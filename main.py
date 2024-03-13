@@ -40,7 +40,10 @@ load_dotenv()
 
 PROMPT = """
 You are an expert in programming. 
-You given a code file. Please analyse it on docstrings missing, and where possible insert it. Return improved code. Don't return all the code, only parts with missing docstrings.
+You given a code file. Please analyse it on missed docstrings and type hints. Insert docstring where possible and try to insert  <<TYPEHINT>> in places where they are missed. 
+Please, don't return whole code, only improved parts.
+ 
+
 """
 
 
