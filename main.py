@@ -138,7 +138,7 @@ def handle_webhook():
                 # # Get files from head branch
                 head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
                 # # Enrich diff data with context from the head branch.
-                context_files = get_context_from_files(head_branch_files, files_with_lines)
+                #context_files = get_context_from_files(head_branch_files, files_with_lines)
                 # Get suggestions from Open code helper
                 content = mentor(head_branch_files, NvidiaLLM())
                 # Let's comment on the PR
