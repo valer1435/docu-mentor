@@ -13,7 +13,7 @@ from utils import (
     generate_jwt,
     get_installation_access_token,
     get_diff_url,
-    parse_diff_to_line_numbers, get_pr_head_branch, get_branch_files, get_context_from_files
+    parse_diff_to_line_numbers, get_branch_files, get_context_from_files
 )
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -53,7 +53,7 @@ def mentor(
 ):
     answer = []
     for i in content:
-        subanswer = model.get_answer(f'{prompt}\n```{content[i]}```')
+        subanswer = model.get_answer(f'{prompt}\n{content[i]}')
         a = f"### File {i}: \n{subanswer}"
         answer.append(a)
 
@@ -134,12 +134,11 @@ def handle_webhook():
                 # Get head branch of the PR
                 headers["Accept"] = "application/vnd.github.full+json"
                 head_branch = get_pr_head_branch(pr, headers)
-
-                # Get files from head branch
+                #
+                # # Get files from head branch
                 head_branch_files = get_branch_files(pr, head_branch, headers, files_with_lines.keys())
-                print(head_branch_files)
-                # Enrich diff data with context from the head branch.
-                #context_files = get_context_from_files(head_branch_files, files_with_lines)
+                # # Enrich diff data with context from the head branch.
+                context_files = get_context_from_files(head_branch_files, files_with_lines)
                 # Get suggestions from Open code helper
                 content = mentor(head_branch_files, NvidiaLLM())
                 # Let's comment on the PR
